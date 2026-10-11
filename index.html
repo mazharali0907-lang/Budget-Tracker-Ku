@@ -37,7 +37,7 @@ input,select{width:100%;min-height:44px;border:1px solid var(--line);border-radi
 .tw{overflow:auto;max-height:420px;border-radius:12px}table{border-collapse:collapse;width:100%;min-width:640px}
 th{position:sticky;top:0;background:var(--bg);text-align:left;font-size:11.5px;color:var(--mut);padding:8px 10px;white-space:nowrap}td{padding:8px 10px;border-top:1px solid var(--line);white-space:nowrap}.r{text-align:right}
 .bg{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}.ok{background:#DCFCE7;color:#15803D}.wn{background:#FEF3C7;color:#B45309}.bad{background:#FEE2E2;color:#B91C1C}
-.pb{height:6px;width:90px;background:var(--line);border-radius:9px;overflow:hidden}.pb i{display:block;height:100%;background:var(--pe)}
+.pb{height:6px;width:90px;background:var(--line);border-radius:999px;overflow:hidden}.pb i{display:block;height:100%;background:var(--pe)}
 .al{padding:9px 12px;border-radius:12px;margin-bottom:6px;font-size:13px;font-weight:600}
 .fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.fg label{font-size:12px;font-weight:600;color:var(--mut);display:block}
 .mm{display:none}.hid{display:none!important}.v{animation:f .3s}@keyframes f{from{opacity:0;transform:translateY(6px)}}
@@ -78,7 +78,7 @@ textarea{width:100%;height:200px;border:1px solid var(--line);border-radius:12px
 <div class="bar"><button class="gh" id="imp">Impor CSV</button><button class="gh" id="exp">Ekspor CSV</button><input type="file" id="fi" accept=".csv,text/csv,text/plain" hidden></div>
 <div class="tw" style="max-height:60vh" id="trx"></div></div></section>
 <section id="v-bud" class="v hid"><div class="card"><h2>Anggaran per Kategori</h2><p class="mut" id="bmL" style="margin:0 0 8px"></p><div class="tw" id="budT"></div><p class="mut" id="budN"></p></div><div class="card" style="margin-top:12px"><h2>Rencana bulan ini</h2><div class="bar" id="bmF"></div></div></section><section id="v-plan" class="v hid"><div class="card"><h2>Perencanaan 12 Bulan</h2><p class="mut">Tabungan aktual = perubahan saldo rekening tujuan + alokasi tercatat. Bulan mendatang hanya berisi rencana (proyeksi). Klik kartu bulan untuk membuka dashboard bulan itu.</p><div class="ch" style="height:300px"><canvas id="cvY"></canvas></div></div><div class="fg" id="planG" style="margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))"></div></section><section id="v-goal" class="v hid"><div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0">Tujuan Tabungan</h2><button class="btn" id="gadd">Tambah tujuan <span class="ar">→</span></button></div><div class="fg" id="goalG" style="margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))"></div></section><section id="v-set" class="v hid">
-<div class="card" style="margin-top:12px"><h2>Pengaturan Periode &amp; Saldo</h2><div class="fg" id="setF"></div><p class="mut">Hijau = Aman, Kuning = Hampir Habis, Merah = Melebihi Anggaran. Kebutuhan lainnya sengaja tanpa anggaran (Rp0), jadi setiap pengeluarannya ditandai merah dan mengurangi saldo penyangga.</p>
+<div class="card" style="margin-top:12px"><h2>Pengaturan Periode &amp; Saldo</h2><div class="fg" id="setF"></div><p class="mut">Hijau = Aman, Kuning = Hampir Habis, Merah = Melebihi Anggaran.</p>
 <p style="display:flex;gap:8px;flex-wrap:wrap"><button class="gh" id="bk">Cadangkan (JSON)</button><button class="gh" id="rs">Pulihkan (JSON)</button><input type="file" id="fj" accept=".json,application/json" hidden><button class="gh" id="rst">Kembalikan data awal</button></p></div></section>
 <section id="v-har" class="v hid"><div class="card"><h2>Ringkasan Harian</h2><div class="tw" style="max-height:70vh" id="harT"></div></div></section>
 </div></main></div>
@@ -99,11 +99,12 @@ textarea{width:100%;height:200px;border:1px solid var(--line);border-radius:12px
 <dialog id="dm"><h2>Menu lainnya</h2><p style="display:grid;gap:8px"><button class="gh" data-go="plan">Perencanaan 12 bulan</button><button class="gh" data-go="har">Ringkasan harian</button><button class="gh" data-go="set">Pengaturan</button><button class="gh" id="dmx">Tutup</button></p></dialog>
 <div id="toast"></div>
 
-<!-- FIREBASE SDK -->
+<!-- FIREBASE SDK (MENGGUNAKAN VERSI COMPAT AGAR BISA JALAN TANPA BUILD TOOL/IMPORT) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
+// KONFIGURASI FIREBASE KAMU
 const firebaseConfig = {
   apiKey: "AIzaSyDNEUpEYZvM4YBbnw8SJb3JuO9WH0x04JY",
   authDomain: "budget-tracker-harian-azhar.firebaseapp.com",
@@ -118,7 +119,7 @@ let dbRef = null;
 try {
   firebase.initializeApp(firebaseConfig);
   dbRef = firebase.database().ref('budgetTrackerData');
-} catch(e) { console.error(e); }
+} catch(e) { console.error("Firebase init error:", e); }
 
 const $=s=>document.querySelector(s),KEY='budgetTrackerV1',CATS=['Gym','Makan di luar','Buah, telur, dan mi instan','Pulsa dan gas','Nongkrong dan hiburan','Dana darurat','Kebutuhan lainnya'],OUT='Kebutuhan lainnya',EM='Dana darurat',TR='Transfer antar-rekening',JEN=['Pengeluaran','Pemasukan',TR],ALL=[...CATS,'Pemasukan',TR],PAL=['#0B3FD0','#8CFF00','#7FA8FF','#082B8C','#1249E8','#A3AAC8','#6B7194'];
 const BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
@@ -202,7 +203,7 @@ inc=T.filter(t=>t.j==='Pemasukan'&&t.d===d).reduce((q,t)=>q+(+t.m||0),0),bal=(r,
 h+=`<tr${d===D.today?' style="background:var(--bg)"':''}><td>${fd(d)}</td><td>${HARI[pd(d).getDay()]}</td><td class="r">${rp(p)}</td><td class="r">${rp(m)}</td><td class="r">${rp(k)}</td><td class="r">${rp(l)}</td><td class="r">${rp(inc)}</td><td class="r">${rp(b1)}</td><td class="r">${rp(b2)}</td></tr>`}
 $('#harT').innerHTML=`<table style="min-width:860px"><thead><tr><th>Tanggal</th><th>Hari</th><th class="r">Total pengeluaran</th><th class="r">Makan di luar</th><th class="r">Belanja bahan makanan</th><th class="r">Kebutuhan lainnya</th><th class="r">Total pemasukan</th><th class="r">Saldo ATM 1</th><th class="r">Saldo ATM 2</th></tr></thead><tbody>${h}<tr style="font-weight:800"><td colspan="2">TOTAL / SALDO AKHIR</td><td class="r">${rp(tp)}</td><td class="r">${rp(tm)}</td><td class="r">${rp(tk)}</td><td class="r">${rp(tl)}</td><td class="r">${rp(ti)}</td><td class="r">${rp(b1)}</td><td class="r">${rp(b2)}</td></tr></tbody></table>`}
 const setB=(c,v)=>{mut(S.cur).b[c]=Math.max(0,+v||0);save();renderAll()},setM=(f,v)=>{mut(S.cur)[f]=Math.max(0,+v||0);save();renderAll()},setS=(k,v)=>{if(k==='pl')S.pl=v||S.pl;else S.s[k]=k==='start'?(v||S.s.start):k==='theme'?v:k==='thr'?Math.min(1,Math.max(0,(+v||0)/100)):+v||0;save();renderAll()};
-function migrate(){if(!S)return;if(S.v===2)return;const n=new Date();S.mb=S.mb||{orig:{b:S.b||seed().b,inc:0,sv:0}};S.pl=S.pl||n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');S.cur='orig';S.g=S.g||[{id:'g_hp',name:'Beli HP',target:0,acc:'ATM 2',saved:0,cs:[],start:'2026-10-10',date:'',monthly:0,cat:'Elektronik',icon:'📱',prio:'Tinggi',st:'Aktif',desc:'Dimigrasikan dari tabungan HP (ATM 2). Isi target dan tenggat.'}];S.v=2}
+function migrate(){if(!S)return;if(S.v===2)return;const n=new Date();S.mb=S.mb||{orig:{b:S.b||seed().b,inc:0,sv:0}};S.pl=S.pl||n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');S.cur='orig';S.g=S.g||[{id:'g_hp',name:'Beli HP',target:0,acc:'ATM 2',saved:0,cs:[],start:'2026-10-10',date:'',monthly:0,cat:'Elektronik',icon:'📱',prio:'Tinggi',st:'Aktif',desc:'Dimigrasikan dari tabungan HP (ATM 2).'}] ;S.v=2}
 const keys=()=>{const[y,m]=S.pl.split('-').map(Number);return['orig',...Array.from({length:12},(_,i)=>{const d=new Date(y,m-1+i,1);return d.getFullYear()+'-'+z(d.getMonth()+1)})]};
 const per=k=>{if(k==='orig')return{start:S.s.start,end:addD(S.s.start,30),label:fd(S.s.start)+' – '+fd(addD(S.s.start,30))+' (periode asli)'};const[y,m]=k.split('-').map(Number);return{start:k+'-01',end:iso(new Date(y,m,0)),label:BLN[m-1]+' '+y+' (kalender)'}};
 const M=k=>S.mb[k]||{b:{...S.mb.orig.b},inc:0,sv:0},mut=k=>S.mb[k]||(S.mb[k]={b:{...S.mb.orig.b},inc:0,sv:0}),days=(a,b)=>Math.round((pd(b)-pd(a))/864e5),win=()=>{const k=keys();return[[S.s.start,per(k[1]).start].sort()[0],[per(k[12]).end,per('orig').end].sort()[1]]};
