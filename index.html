@@ -138,11 +138,11 @@ const save=()=>{
   try{
     const{b,...r}=S;
     localStorage.setItem(KEY,JSON.stringify(r));
-    dbRef.set(r); // Simpan ke Cloud Firebase
+    dbRef.set(r);
   }catch(e){console.error("Gagal simpan ke Firebase:",e)}
 };
 
-// SINKRONISASI REALTIME DARINYA (HP & LAPTOP)
+// SINKRONISASI REALTIME (HP & LAPTOP)
 dbRef.on('value', (snapshot) => {
   const dataCloud = snapshot.val();
   if (dataCloud) {
@@ -213,7 +213,7 @@ function fillPP(){if(!keys().includes(S.cur))S.cur='orig';const tm=iso(new Date(
 const goM=k=>{S.cur=k;save();document.querySelector('.nav[data-v=dash]').click()};
 const ms=k=>{const P=per(k),m=M(k),BC=CATS.filter(c=>c!==OUT),tb=BC.reduce((p,c)=>p+(m.b[c]||0),0),T=S.t.filter(t=>t.d>=P.start&&t.d<=P.end),td=iso(new Date()),lk=S.g.filter(g=>g.acc).map(g=>g.acc),sm=(a,f)=>a.reduce((p,t)=>p+f(t),0),ex=T.filter(t=>t.j==='Pengeluaran');
 return{k,P,tb,act:sm(ex,t=>+t.x||0),used:sm(ex.filter(t=>BC.includes(t.c)),t=>+t.x||0),inc:sm(T.filter(t=>t.j==='Pemasukan'),t=>+t.m||0),sav:sm(T.filter(t=>lk.includes(t.r)),t=>(+t.m||0)-(+t.x||0))+sm(S.g.flatMap(g=>g.cs||[]).filter(c=>c.d>=P.start&&c.d<=P.end),c=>c.a),pi:m.inc||0,sv:m.sv||0,st:td>P.end?'Selesai':td<P.start?'Mendatang':'Berjalan'}};
-let c3;
+let c3;const fu=a=>a.st==='Mendatang'?null:1;
 function rPlan(){const A=keys().slice(1).map(ms);$('#planG').innerHTML=A.map(a=>{const f=a.st!=='Mendatang',p=a.tb?a.used/a.tb*100:0;return`<div class="card" style="cursor:pointer;${a.k===S.cur?'outline:2px solid var(--li);':''}" tabindex="0" role="button" onclick="goM('${a.k}')" onkeydown="if(event.key==='Enter')goM('${a.k}')"><div style="display:flex;justify-content:space-between;gap:6px"><b>${BLN[+a.k.slice(5)-1]} ${a.k.slice(0,4)}</b><span class="bg ${a.st==='Berjalan'?'ok':'wn'}">${a.st}</span></div><p class="mut">Rencana: pemasukan ${rp(a.pi)}, anggaran ${rp(a.tb)}, tabungan ${rp(a.sv)}</p><p class="mut">${f?`Aktual: pemasukan ${rp(a.inc)}, pengeluaran ${rp(a.act)}, tabungan${rp(a.sav)}`:'Belum ada data aktual (proyeksi)'}</p>${f?`<div class="pb" style="width:100%"><i style="width:${Math.min(100,p)}\%"></i></div><small>${p.toFixed(0)}% anggaran terpakai</small>`:''}</div>`}).join('');
 c3&&c3.destroy();Chart.defaults.color=cv('--mut');c3=new Chart($('#cvY'),{type:'bar',data:{labels:A.map(a=>BLN[+a.k.slice(5)-1].slice(0,3)),datasets:[{label:'Rencana pengeluaran',data:A.map(a=>a.tb),backgroundColor:'#A3AAC8'},{label:'Aktual pengeluaran',data:A.map(a=>fu(a)&&a.act),backgroundColor:'#0B3FD0'},{label:'Target tabungan',data:A.map(a=>a.sv),backgroundColor:'#8CFF00'},{label:'Tabungan aktual',data:A.map(a=>fu(a)&&a.sav),backgroundColor:'#082B8C'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:x=>x.dataset.label+': '+rp(x.raw)}}},scales:{y:{ticks:{callback:v=>v>=1e6?v/1e6+' jt':v>=1e3?v/1e3+' rb':v}}}}})}
 function rBM(){const k=S.cur,m=M(k),o=k==='orig';$('#bmL').textContent='Mengedit: '+per(k).label;$('#bmF').innerHTML=`<div style="flex:1 1 150px"><label>Pemasukan rencana (Rp)</label><input type="number" min="0" value="${m.inc||0}" onchange="setM('inc',this.value)"></div><div style="flex:1 1 150px"><label>Target tabungan bulan ini (Rp)</label><input type="number" min="0" value="${m.sv||0}" onchange="setM('sv',this.value)"></div><button class="gh" ${o?'disabled':''} onclick="cpB()">Salin anggaran bulan sebelumnya</button><button class="gh" ${o?'disabled':''} onclick="blB(this)">Kosongkan anggaran bulan ini</button>`}
