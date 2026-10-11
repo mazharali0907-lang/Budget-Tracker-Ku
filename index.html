@@ -211,9 +211,25 @@ function fillPP(){if(!keys().includes(S.cur))S.cur='orig';const tm=iso(new Date(
 const goM=k=>{S.cur=k;save();document.querySelector('.nav[data-v=dash]').click()};
 const ms=k=>{const P=per(k),m=M(k),BC=CATS.filter(c=>c!==OUT),tb=BC.reduce((p,c)=>p+(m.b[c]||0),0),T=(S.t||[]).filter(t=>t.d>=P.start&&t.d<=P.end),td=iso(new Date()),lk=(S.g||[]).filter(g=>g.acc).map(g=>g.acc),sm=(a,f)=>a.reduce((p,t)=>p+f(t),0),ex=T.filter(t=>t.j==='Pengeluaran');
 return{k,P,tb,act:sm(ex,t=>+t.x||0),used:sm(ex.filter(t=>BC.includes(t.c)),t=>+t.x||0),inc:sm(T.filter(t=>t.j==='Pemasukan'),t=>+t.m||0),sav:sm(T.filter(t=>lk.includes(t.r)),t=>(+t.m||0)-(+t.x||0))+sm((S.g||[]).flatMap(g=>g.cs||[]).filter(c=>c.d>=P.start&&c.d<=P.end),c=>c.a),pi:m.inc||0,sv:m.sv||0,st:td>P.end?'Selesai':td<P.start?'Mendatang':'Berjalan'}};
-let c3;const fu=a=>a.st==='Mendatang'?null:1;
-function rPlan(){const A=keys().slice(1).map(ms);$('#planG').innerHTML=A.map(a=>{const f=a.st!=='Mendatang',p=a.tb?a.used/a.tb*100:0;return`<div class="card" style="cursor:pointer;${a.k===S.cur?'outline:2px solid var(--li);':''}" tabindex="0" role="button" onclick="goM('${a.k}')" onkeydown="if(event.key==='Enter')goM('${a.k}')"><div style="display:flex;justify-content:space-between;gap:6px"><b>${BLN[+a.k.slice(5)-1]} ${a.k.slice(0,4)}</b><span class="bg ${a.st==='Berjalan'?'ok':'wn'}">${a.st}</span></div><p class="mut">Rencana: pemasukan ${rp(a.pi)}, anggaran ${rp(a.tb)}, tabungan ${rp(a.sv)}</p><p class="mut">${f?`Aktual: pemasukan ${rp(a.inc)}, pengeluaran ${rp(a.act)}, tabungan${rp(a.sav)}`:'Belum ada data aktual (proyeksi)'}</p>${f?`<div class="pb" style="width:100%"><i style="width:${Math.min(100,p)}\%"></i></div><small>${p.toFixed(0)}% anggaran terpakai</small>`:''}</div>`}).join('');
-c3&&c3.destroy();Chart.defaults.color=cv('--mut');c3=new Chart($('#cvY'),{type:'bar',data:{labels:A.map(a=>BLN[+a.k.slice(5)-1].slice(0,3)),datasets:[{label:'Rencana pengeluaran',data:A.map(a=>a.tb),backgroundColor:'#A3AAC8'},{label:'Aktual pengeluaran',data:A.map(a=>fu(a)&&a.act),backgroundColor:'#0B3FD0'},{label:'Target tabungan',data:A.map(a=>a.sv),backgroundColor:'#8CFF00'},{label:'Tabungan aktual',data:A.map(a=>fu(a)&&a.sav),backgroundColor:'#082B8C'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:x=>x.dataset.label+': '+rp(x.raw)}}},scales:{y:{ticks:{callback:v=>v>=1e6?v/1e6+' jt':v>=1e3?v/1e3+' rb':v}}}}})}
+let c3;
+function rPlan(){
+  try {
+    const A=keys().slice(1).map(ms);
+    $('#planG').innerHTML=A.map(a=>{
+      const f=a.st!=='Mendatang',p=a.tb?a.used/a.tb*100:0;
+      return`<div class="card" style="cursor:pointer;${a.k===S.cur?'outline:2px solid var(--li);':''}" tabindex="0" role="button" onclick="goM('${a.k}')" onkeydown="if(event.key==='Enter')goM('${a.k}')"><div style="display:flex;justify-content:space-between;gap:6px"><b>${BLN[+a.k.slice(5)-1]} ${a.k.slice(0,4)}</b><span class="bg ${a.st==='Berjalan'?'ok':'wn'}">${a.st}</span></div><p class="mut">Rencana: pemasukan ${rp(a.pi)}, anggaran ${rp(a.tb)}, tabungan ${rp(a.sv)}</p><p class="mut">${f?`Aktual: pemasukan ${rp(a.inc)}, pengeluaran ${rp(a.act)}, tabungan${rp(a.sav)}`:'Belum ada data aktual (proyeksi)'}</p>${f?`<div class="pb" style="width:100%"><i style="width:${Math.min(100,p)}\%"></i></div><small>${p.toFixed(0)}% anggaran terpakai</small>`:''}</div>`
+    }).join('');
+    if(c3) c3.destroy();
+    if(typeof Chart !== 'undefined'){
+      Chart.defaults.color=cv('--mut');
+      const cvY = $('#cvY');
+      if(cvY) {
+        c3=new Chart(cvY,{type:'bar',data:{labels:A.map(a=>BLN[+a.k.slice(5)-1].slice(0,3)),datasets:[{label:'Rencana pengeluaran',data:A.map(a=>a.tb),backgroundColor:'#A3AAC8'},{label:'Aktual pengeluaran',data:A.map(a=>a.st==='Mendatang'?null:a.act),backgroundColor:'#0B3FD0'},{label:'Target tabungan',data:A.map(a=>a.sv),backgroundColor:'#8CFF00'},{label:'Tabungan aktual',data:A.map(a=>a.st==='Mendatang'?null:a.sav),backgroundColor:'#082B8C'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:x=>x.dataset.label+': '+rp(x.raw)}}},scales:{y:{ticks:{callback:v=>v>=1e6?v/1e6+' jt':v>=1e3?v/1e3+' rb':v}}}}});
+      }
+    }
+  } catch(e) { console.error(e); }
+}
+
 function rBM(){const k=S.cur,m=M(k),o=k==='orig';$('#bmL').textContent='Mengedit: '+per(k).label;$('#bmF').innerHTML=`<div style="flex:1 1 150px"><label>Pemasukan rencana (Rp)</label><input type="number" min="0" value="${m.inc||0}" onchange="setM('inc',this.value)"></div><div style="flex:1 1 150px"><label>Target tabungan bulan ini (Rp)</label><input type="number" min="0" value="${m.sv||0}" onchange="setM('sv',this.value)"></div><button class="gh" ${o?'disabled':''} onclick="cpB()">Salin anggaran bulan sebelumnya</button><button class="gh" ${o?'disabled':''} onclick="blB(this)">Kosongkan anggaran bulan ini</button>`}
 function cpB(){const k=keys(),i=k.indexOf(S.cur);if(i<1)return;mut(S.cur).b={...M(k[i-1]).b};save();renderAll();toast('Alokasi anggaran disalin (tanpa transaksi)')}
 function blB(b){if(b.dataset.a){const m=mut(S.cur);CATS.forEach(c=>m.b[c]=0);save();renderAll();return}b.dataset.a=1;b.textContent='Yakin? Semua alokasi jadi Rp0';setTimeout(()=>{b.dataset.a='';b.textContent='Kosongkan anggaran bulan ini'},3000)}
@@ -229,14 +245,27 @@ function openG(g){gid=g?g.id:null;$('#dgt').textContent=g?'Ubah tujuan':'Tambah 
 function gAct(id,a,b){const g=S.g.find(x=>x.id===id);if(a==='e')return openG(g);if(a==='k'){kid=id;$('#k_d').value=iso(new Date());$('#k_a').value='';$('#k_n').value='';return $('#dk').showModal()}
 if(a==='d'){if(!b.dataset.a){b.dataset.a=1;b.textContent='Yakin?';setTimeout(()=>{b.dataset.a='';b.textContent='Hapus'},3000);return}S.g=S.g.filter(x=>x.id!==id)}else g.st=a==='p'?(g.st==='Dijeda'?'Aktif':'Dijeda'):a==='s'?'Selesai':g.st==='Diarsipkan'?'Aktif':'Diarsipkan';save();renderAll()}
 let c1,c2,lastM;const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-function draw(){if($('#v-dash').classList.contains('hid'))return;const D=calc(),mob=innerWidth<768;lastM=mob;[c1,c2].forEach(c=>c&&c.destroy());
-Chart.defaults.color=cv('--mut');Chart.defaults.font.family="'Plus Jakarta Sans',system-ui,sans-serif";Chart.defaults.font.size=mob?10:11;
-const kf=v=>v>=1e6?v/1e6+' jt':v>=1e3?v/1e3+' rb':v,val={beginAtZero:true,ticks:{callback:kf},grid:{color:cv('--line')}},cat={grid:{display:false}};
-c1=new Chart($('#cvA'),{type:'bar',data:{labels:CATS.map(c=>c.length>16?c.slice(0,15)+'…':c),datasets:[{label:'Anggaran',data:CATS.map(c=>S.b[c]||0),backgroundColor:'#A3AAC8',borderRadius:6},{label:'Aktual',data:CATS.map(c=>D.act[c]),backgroundColor:'#0B3FD0',borderRadius:6}]},
-options:{indexAxis:mob?'y':'x',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:10}},tooltip:{callbacks:{title:i=>CATS[i[0].dataIndex],label:x=>x.dataset.label+': '+rp(x.raw)}}},scales:mob?{x:val,y:cat}:{x:cat,y:val}}});
-const it=CATS.filter(c=>D.act[c]>0),e=!it.length;
-c2=new Chart($('#cvD'),{type:'doughnut',data:{labels:e?['Belum ada pengeluaran']:it,datasets:[{data:e?[1]:it.map(c=>D.act[c]),backgroundColor:e?['#DDE2F0']:it.map(c=>PAL[CATS.indexOf(c)]),borderWidth:2,borderColor:cv('--card')}]},
-options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:mob?'bottom':'right',labels:{boxWidth:10}},tooltip:{enabled:!e,callbacks:{label:x=>x.label+': '+rp(x.raw)}}}}})}
+function draw(){
+  try {
+    if($('#v-dash').classList.contains('hid'))return;
+    const D=calc(),mob=innerWidth<768;lastM=mob;
+    [c1,c2].forEach(c=>c&&c.destroy());
+    if(typeof Chart === 'undefined') return;
+    Chart.defaults.color=cv('--mut');Chart.defaults.font.family="'Plus Jakarta Sans',system-ui,sans-serif";Chart.defaults.font.size=mob?10:11;
+    const kf=v=>v>=1e6?v/1e6+' jt':v>=1e3?v/1e3+' rb':v,val={beginAtZero:true,ticks:{callback:kf},grid:{color:cv('--line')}},cat={grid:{display:false}};
+    const cvA = $('#cvA'), cvD = $('#cvD');
+    if(cvA){
+      c1=new Chart(cvA,{type:'bar',data:{labels:CATS.map(c=>c.length>16?c.slice(0,15)+'…':c),datasets:[{label:'Anggaran',data:CATS.map(c=>S.b[c]||0),backgroundColor:'#A3AAC8',borderRadius:6},{label:'Aktual',data:CATS.map(c=>D.act[c]),backgroundColor:'#0B3FD0',borderRadius:6}]},
+      options:{indexAxis:mob?'y':'x',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:10}},tooltip:{callbacks:{title:i=>CATS[i[0].dataIndex],label:x=>x.dataset.label+': '+rp(x.raw)}}},scales:mob?{x:val,y:cat}:{x:cat,y:val}}});
+    }
+    if(cvD){
+      const it=CATS.filter(c=>D.act[c]>0),e=!it.length;
+      c2=new Chart(cvD,{type:'doughnut',data:{labels:e?['Belum ada pengeluaran']:it,datasets:[{data:e?[1]:it.map(c=>D.act[c]),backgroundColor:e?['#DDE2F0']:it.map(c=>PAL[CATS.indexOf(c)]),borderWidth:2,borderColor:cv('--card')}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:mob?'bottom':'right',labels:{boxWidth:10}},tooltip:{enabled:!e,callbacks:{label:x=>x.label+': '+rp(x.raw)}}}}});
+    }
+  } catch(e) { console.error(e); }
+}
+
 addEventListener('resize',()=>{if((innerWidth<768)!==lastM)draw()});
 $('#seg').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('#charts').dataset.show=b.dataset.s;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x===b));draw()};
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.v').forEach(v=>v.classList.toggle('hid',v.id!=='v-'+b.dataset.v));scrollTo(0,0);renderAll()});
